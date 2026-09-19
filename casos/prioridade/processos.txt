@@ -1,0 +1,3 @@
+P1 0 3 casos/prioridade/p1.asm
+P2 0 5 casos/prioridade/p2.asm
+P3 0 3 casos/prioridade/p3.asm
