@@ -22,6 +22,9 @@ enum class Estado
 // rodem o mesmo .asm
 struct Process
 {
+    // Identificador do processo (vem do arquivo de config). Existe porque o Process é copiado por valor entre as filas do scheduler o tempo todo. Vm ponteiro/índice pra "qual processo é esse" não sobrevive a essascópias, mas um campo dentro do próprio struct viaja junto.
+    std::string nome;
+
     // Instruções do programa que esse processo executa (cópia de programa.instrucoes). Não muda durante a execução, só é consultada.
     std::vector<Instrucao> instrucoes;
 
@@ -42,10 +45,8 @@ struct Process
     int prioridade;
 };
 
-// Cria um Process a partir de um Programa já processado pelo assembler:
-// copia as instruções, inicializa a memória a partir de programa.variaveis
-// e zera acc/pc, deixando o processo pronto pra rodar (estado PRONTO).
-Process criarProcesso(Programa programa, int prioridade);
+// Cria um Process a partir de um Programa já processado pelo assembler: copia as instruções, inicializa a memória a partir de programa.variaveis e zera acc/pc, deixando o processo pronto pra rodar (estado PRONTO).
+Process criarProcesso(Programa programa, std::string nome, int prioridade);
 
 // Executa a instrução em instrucoes[pc] sobre o processo e avança pc.
 // Cada opcode altera acc/memoria/pc/estado de um jeito diferente ; quem decide QUANDO chamar step() é o scheduler.

@@ -9,7 +9,7 @@ using namespace std;
 void testarP1()
 {
     Programa programa = parse("tests/p1.asm");
-    Process processo = criarProcesso(programa, 1);
+    Process processo = criarProcesso(programa, "P1", 1);
 
     step(processo); // LOAD valor
     assert(processo.acc == 10);
@@ -36,7 +36,7 @@ void testarP1()
 void testarP2()
 {
     Programa programa = parse("tests/p2.asm");
-    Process processo = criarProcesso(programa, 5);
+    Process processo = criarProcesso(programa, "P2", 5);
 
     step(processo); // LOAD limite
     assert(processo.acc == 3);

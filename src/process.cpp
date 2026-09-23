@@ -17,10 +17,11 @@ static int obterValor(const Instrucao &instrucao, const Process &processo)
     return processo.memoria.at(instrucao.nomeVariavel);
 }
 
-Process criarProcesso(Programa programa, int prioridade)
+Process criarProcesso(Programa programa, std::string nome, int prioridade)
 {
     Process processo;
 
+    processo.nome = nome;
     processo.instrucoes = programa.instrucoes;
     processo.memoria = programa.variaveis; // copia: mudanças aqui não afetam o Programa original
 
