@@ -1,10 +1,11 @@
 #include <iostream>
+#include "assembler.h"
 
 using namespace std;
 
 int main()
 {
-    cout << "Estrutura Inicial" << endl;
+    parse("tests/p1.asm");
 
     return 0;
 }
