@@ -1,5 +1,5 @@
 #include "assembler.h"
-#include <cassert>
+#include <cassert> // assert(condição): não faz nada se for true; se for false, aborta o programa na hora e imprime arquivo/linha/condição que falhou
 #include <iostream>
 
 using namespace std;

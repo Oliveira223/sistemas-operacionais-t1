@@ -19,10 +19,10 @@ const map<string, Opcode> opcodesPorNome = {
     {"LOAD", Opcode::LOAD}, 
     {"STORE", Opcode::STORE},
 
-    {"BRANY", Opcode::BRANY}, 
-    {"BRPOS", Opcode::BRPOS}, 
-    {"BRZERO", Opcode::BRZERO}, 
-    {"BRNEG", Opcode::BRNEG},
+    {"BRANY", Opcode::BRANY},   // salta sempre, incondicional
+    {"BRPOS", Opcode::BRPOS},   // salta se acc > 0
+    {"BRZERO", Opcode::BRZERO}, // salta se acc == 0
+    {"BRNEG", Opcode::BRNEG},   // salta se acc < 0
 
     {"SYSCALL", Opcode::SYSCALL}
 };
