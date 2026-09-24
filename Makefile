@@ -3,14 +3,13 @@ CXX = g++
 CXXFLAGS = -std=c++11 -Wall -Wextra
 
 # Arquivos .cpp que entram na compilação
-SRC = src/main.cpp src/assembler.cpp
+SRC = src/main.cpp src/assembler.cpp src/process.cpp src/scheduler.cpp
 
-# Headers dos quais o binário depende (se um mudar, recompila tudo)
+# Headers dos quais o binário depende (se um mudar precisamos recompila tudo)
 HEADERS = src/assembler.h src/process.h src/scheduler.h
 
 # Nome do executável gerado
 BIN = simulador
-
 
 .PHONY: all test clean
 
