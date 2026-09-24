@@ -1,0 +1,3 @@
+# nome arrival prioridade caminho.asm
+P1 0 3 tests/p1.asm
+P2 1 5 tests/p2.asm

@@ -1,0 +1,4 @@
+simulador
+tests/test_assembler
+tests/test_process
+tests/test_scheduler
