@@ -1,5 +1,7 @@
 # Simulador de Escalonamento de Processos (MLFQ)
 
+Repositório: https://github.com/Oliveira223/sistemas-operacionais-t1
+
 Trabalho da disciplina de Sistemas Operacionais: um simulador de
 escalonamento com 2 filas MLFQ, que interpreta processos escritos numa
 linguagem assembly hipotética (baseada em acumulador) e simula a execução
