@@ -15,13 +15,7 @@ struct Pendente
     int arrival;
 };
 
-// Lê o arquivo de config, formato "nome arrival prioridade caminho.asm".
-// Linhas em branco ou começando com # são ignoradas (comentário) -- lê
-// linha por linha (em vez de >> direto do arquivo) exatamente por causa
-// disso: precisa decidir "pular ou processar" antes de tentar extrair os
-// 4 campos, senão uma linha de comentário quebraria a extração e pararia
-// a leitura do arquivo inteiro ali (igual ao que já fazemos no
-// assembler.cpp pra pular linha de label).
+// Lê o arquivo de config, formato "nome arrival prioridade caminho.asm". Linhas em branco ou começando com # são ignoradas (comentário) - lê linha por linha (em vez de >> direto do arquivo) exatamente por causa disso: precisa decidir "pular ou processar" antes de tentar extrair os 4 campos, senão uma linha de comentário quebraria a extração e pararia a leitura do arquivo inteiro ali (igual ao que já fazemos no assembler.cpp pra pular linha de label).
 vector<Pendente> lerConfig(string caminho)
 {
     vector<Pendente> pendentes;
@@ -138,10 +132,7 @@ bool aindaNaoChegou(const string &nome, const vector<Pendente> &pendentes)
     return false;
 }
 
-// Uso: ./simulador [caminho/do/config.txt]
-// Sem argumento, usa tests/processos.txt (cenário P1+P2 do enunciado) --
-// mas qualquer arquivo no mesmo formato pode ser passado na hora, sem
-// precisar recompilar (importante pra rodar outros casos na apresentação).
+// Uso: ./simulador [caminho/do/config.txt]. Sem argumento, usa tests/processos.txt (cenário P1+P2 do enunciado), mas qualquer arquivo no mesmo formato pode ser passado na hora, sem precisar recompilar (importante pra rodar outros casos na apresentação).
 int main(int argc, char *argv[])
 {
     string caminhoConfig = (argc > 1) ? argv[1] : "tests/processos.txt";
@@ -167,8 +158,7 @@ int main(int argc, char *argv[])
     // Roda até todo mundo terminar, nem um UT a mais nem a menos.
     for (int ut = 0; finalizados < totalProcessos; ut++)
     {
-        // Admite quem chega nesse UT ANTES de chamar tick(): assim, quem acabou de chegar já disputa a CPU nesse mesmo UT (mesma lógica da preempção imediata -- tick() sempre reavalia a Fila 0 dozero). 
-        // Índice+erase é o mesmo padrão do avancarBloqueados: precisa reprocessar o índice que "tomou o lugar" de quem foiok removido, por isso só incrementa i no else.
+        // Admite quem chega nesse UT ANTES de chamar tick(): assim, quem acabou de chegar já disputa a CPU nesse mesmo UT (mesma lógica da preempção imediata, tick() sempre reavalia a Fila 0 do zero). Índice+erase é o mesmo padrão do avancarBloqueados: precisa reprocessar o índice que "tomou o lugar" de quem foi removido, por isso só incrementa i no else.
         for (size_t i = 0; i < pendentes.size();)
         {
             if (pendentes[i].arrival == ut)
@@ -193,11 +183,7 @@ int main(int argc, char *argv[])
 
         for (const string &nome : bloqueadosAntes)
         {
-            // Se esse processo é justamente quem rodou nesse UT, é porque
-            // o countdown zerou e ele foi direto pra fila0 e já despachado
-            // no mesmo tick() -- esse UT conta como CPU, não bloqueio
-            // (senão seria contado 2x: turnaround = CPU+bloqueio+espera
-            // não bateria mais, espera podia até ficar negativa).
+            // Se esse processo é justamente quem rodou nesse UT, é porque o countdown zerou e ele foi direto pra fila0 e já despachado no mesmo tick(): esse UT conta como CPU, não bloqueio (senão seria contado 2x: turnaround = CPU+bloqueio+espera não bateria mais, espera podia até ficar negativa).
             if (nome != r.quemRodou)
             {
                 registros[nome].tempoBloqueio++;

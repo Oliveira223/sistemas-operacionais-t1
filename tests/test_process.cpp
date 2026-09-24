@@ -4,8 +4,7 @@
 
 using namespace std;
 
-// Roda tests/p1.asm inteiro passo a passo e confere cada instrução contra o
-// que o próprio arquivo descreve: LOAD/ADD/STORE/SYSCALL 1/SYSCALL 0
+// Roda tests/p1.asm inteiro passo a passo e confere cada instrução contra o que o próprio arquivo descreve: LOAD/ADD/STORE/SYSCALL 1/SYSCALL 0
 void testarP1()
 {
     Programa programa = parse("tests/p1.asm");
@@ -31,8 +30,7 @@ void testarP1()
     cout << "p1: ok\n";
 }
 
-// Roda tests/p2.asm: laço SUB/STORE/SYSCALL 1/LOAD/BRPOS repete 3x (acc vai
-// de 3 até 0, decrementando 1 por iteração), depois sai do laço e finaliza
+// Roda tests/p2.asm: laço SUB/STORE/SYSCALL 1/LOAD/BRPOS repete 3x (acc vai de 3 até 0, decrementando 1 por iteração), depois sai do laço e finaliza
 void testarP2()
 {
     Programa programa = parse("tests/p2.asm");

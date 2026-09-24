@@ -1,9 +1,6 @@
 #include "process.h"
 
-// Função auxiliar, static para existir apenas dentro desse codigo.
-// Devolve o valor que a instrução referencia: valorImediato (#N) ou o que
-// está guardado em memoria[nomeVariavel] (endereço direto). Usado por
-// aritmética, LOAD e (depois) pelos saltos — todos leem um valor desse jeito.
+// Função auxiliar, static para existir apenas dentro desse codigo. Devolve o valor que a instrução referencia: valorImediato (#N) ou o que está guardado em memoria[nomeVariavel] (endereço direto). Usado por aritmética, LOAD e (depois) pelos saltos - todos leem um valor desse jeito.
 static int obterValor(const Instrucao &instrucao, const Process &processo)
 {
     if (instrucao.tipoOperando == TipoOperando::IMEDIATO)
@@ -11,9 +8,7 @@ static int obterValor(const Instrucao &instrucao, const Process &processo)
         return instrucao.valorImediato;
     }
 
-    // .at() em vez de []: processo é const aqui (operator[] de map não
-    // compila em referência const), e além disso .at() lança exceção se a
-    // variável não existir, em vez de criar uma entrada nova com valor 0.
+    // .at() em vez de []: processo é const aqui (operator[] de map não compila em referência const), e além disso .at() lança exceção se a variável não existir, em vez de criar uma entrada nova com valor 0.
     return processo.memoria.at(instrucao.nomeVariavel);
 }
 
@@ -48,9 +43,7 @@ void step(Process &processo)
 
         case Opcode::STORE: processo.memoria.at(instrucao.nomeVariavel) = processo.acc; break;
 
-        // return em vez de break: quando o salto é tomado, pc já vira o
-        // alvo e a função sai aqui, sem passar pelo pc++ padrão do final
-        // (senão pularíamos pro alvo e ainda andaríamos mais uma casa).
+        // return em vez de break: quando o salto é tomado, pc já vira o alvo e a função sai aqui, sem passar pelo pc++ padrão do final (senão pularíamos pro alvo e ainda andaríamos mais uma casa).
         case Opcode::BRANY:
             processo.pc = instrucao.alvoSalto;
             return;
@@ -79,8 +72,7 @@ void step(Process &processo)
             }
             break;
 
-        // indiceSyscall: 0=halt, 1=print, 2=read. O countdown de 3 UT do
-        // bloqueio é responsabilidade do scheduler 
+        // indiceSyscall: 0=halt, 1=print, 2=read. O countdown de 3 UT do bloqueio é responsabilidade do scheduler
         case Opcode::SYSCALL:
             if (instrucao.indiceSyscall == 0)
             {

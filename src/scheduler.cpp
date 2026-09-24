@@ -1,8 +1,6 @@
 #include "scheduler.h"
 
-// Monta o ResultadoTick a partir de quem acabou de rodar e da instrução que
-// foi executada (capturada ANTES do step(), já que depois dele processo.pc
-// já avançou e não dá mais pra saber qual instrução foi essa).
+// Monta o ResultadoTick a partir de quem acabou de rodar e da instrução que foi executada (capturada ANTES do step(), já que depois dele processo.pc já avançou e não dá mais pra saber qual instrução foi essa).
 static ResultadoTick montarResultado(const Process &processo, const Instrucao &instrucaoExecutada)
 {
     ResultadoTick resultado;
@@ -23,8 +21,7 @@ ResultadoTick avancarFila0(Scheduler &scheduler)
 
     ResultadoTick resultado = montarResultado(processo, instrucaoExecutada);
 
-    // 3 situações tiram o processo da frente da fila0 (as outras duas não
-    // têm nada a decidir; só a 3ª calcula pra onde ele vai):
+    // 3 situações tiram o processo da frente da fila0 (as outras duas não têm nada a decidir; só a 3ª calcula pra onde ele vai):
 
     // 1. Terminou (SYSCALL 0) -> sai do sistema, não vai pra lugar nenhum
     if (processo.estado == Estado::FINALIZADO)
@@ -41,8 +38,7 @@ ResultadoTick avancarFila0(Scheduler &scheduler)
         scheduler.quantumUsadoFila0 = 0;
     }
 
-    // 3. Estourou o quantum (2 UT) sem terminar nem bloquear -> rebaixa pra
-    // Fila 1, entra no fim do grupo da sua prioridade com quantum cheio (4 UT)
+    // 3. Estourou o quantum (2 UT) sem terminar nem bloquear -> rebaixa pra Fila 1, entra no fim do grupo da sua prioridade com quantum cheio (4 UT)
     else if (scheduler.quantumUsadoFila0 == 2)
     {
         scheduler.fila1[processo.prioridade].push_back({processo, 4});
@@ -56,18 +52,14 @@ ResultadoTick avancarFila0(Scheduler &scheduler)
 
 void admitirFila0(Scheduler &scheduler, Process processo)
 {
-    // processo novo já chega PRONTO (criarProcesso); retorno de I/O ainda
-    // está com estado == BLOQUEADO (ninguém mais reseta isso) — sem essa
-    // linha, ele ficaria marcado como bloqueado pra sempre, mesmo já
-    // rodando de novo na Fila 0.
+    // processo novo já chega PRONTO (criarProcesso); retorno de I/O ainda está com estado == BLOQUEADO (ninguém mais reseta isso) - sem essa linha, ele ficaria marcado como bloqueado pra sempre, mesmo já rodando de novo na Fila 0.
     processo.estado = Estado::PRONTO;
     scheduler.fila0.push_back(processo);
 }
 
 ResultadoTick avancarFila1(Scheduler &scheduler)
 {
-    // fila1 é um map ordenado por prioridade crescente; rbegin()/rend()
-    // percorre de trás pra frente, ou seja, do maior grupo pro menor.
+    // fila1 é um map ordenado por prioridade crescente; rbegin()/rend() percorre de trás pra frente, ou seja, do maior grupo pro menor.
     for (auto grupo = scheduler.fila1.rbegin(); grupo != scheduler.fila1.rend(); ++grupo)
     {
         std::deque<EntradaFila1> &fila = grupo->second;
@@ -96,8 +88,7 @@ ResultadoTick avancarFila1(Scheduler &scheduler)
         }
         else if (entrada.quantumRestante == 0)
         {
-            // estourou o quantum sem terminar nem bloquear -> fim do mesmo
-            // grupo, com quantum cheio de novo (4 UT)
+            // estourou o quantum sem terminar nem bloquear -> fim do mesmo grupo, com quantum cheio de novo (4 UT)
             EntradaFila1 copia = entrada;
             copia.quantumRestante = 4;
             fila.pop_front();
@@ -105,7 +96,7 @@ ResultadoTick avancarFila1(Scheduler &scheduler)
         }
         // senão: continua no topo do grupo, quantumRestante guarda a contagem
 
-        return resultado; // achou o grupo certo e já rodou o UT — não olha os outros grupos
+        return resultado; // achou o grupo certo e já rodou o UT, não olha os outros grupos
     }
 
     return ResultadoTick{}; // nenhum grupo tinha alguém -> CPU ociosa

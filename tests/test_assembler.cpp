@@ -4,8 +4,7 @@
 
 using namespace std;
 
-// Confere o parse de tests/p1.asm contra o que o próprio arquivo descreve:
-// LOAD valor / ADD #5 / STORE valor / SYSCALL 1 / SYSCALL 0, variavel valor=10
+// Confere o parse de tests/p1.asm contra o que o próprio arquivo descreve: LOAD valor / ADD #5 / STORE valor / SYSCALL 1 / SYSCALL 0, variavel valor=10
 void testarP1()
 {
     Programa p = parse("tests/p1.asm");
@@ -34,8 +33,7 @@ void testarP1()
     cout << "p1: ok\n";
 }
 
-// Confere o parse de tests/p2.asm: 7 instrucoes (o label "loop:" nao conta
-// como instrucao) e o alvoSalto do BRPOS resolvido pro indice certo
+// Confere o parse de tests/p2.asm: 7 instrucoes (o label "loop:" nao conta como instrucao) e o alvoSalto do BRPOS resolvido pro indice certo
 void testarP2()
 {
     Programa p = parse("tests/p2.asm");

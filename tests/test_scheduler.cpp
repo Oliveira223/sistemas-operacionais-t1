@@ -21,9 +21,7 @@ Instrucao fazerSyscall(int indice)
     return instrucao;
 }
 
-// Isolado: estourou o quantum (4 ADD #1 seguidos, sem terminar/bloquear)
-// -> volta pro FIM do mesmo grupo de prioridade, com quantum resetado
-// pra 4. Não pode ser confundido com preempção (testarPreempcao abaixo).
+// Isolado: estourou o quantum (4 ADD #1 seguidos, sem terminar/bloquear) -> volta pro FIM do mesmo grupo de prioridade, com quantum resetado pra 4. Não pode ser confundido com preempção (testarPreempcao abaixo).
 void testarEstourouQuantumFila1()
 {
     Scheduler scheduler;
@@ -44,10 +42,7 @@ void testarEstourouQuantumFila1()
     cout << "testarEstourouQuantumFila1: ok\n";
 }
 
-// Isolado: processo A no meio do quantum da Fila 1 é preemptado pela
-// Fila 0 populando. Enquanto isso, B "chega" no mesmo grupo de prioridade.
-// A deve retomar do TOPO do grupo (antes de B), com quantumRestante e pc
-// preservados -- não reseta como no caso de estouro acima.
+// Isolado: processo A no meio do quantum da Fila 1 é preemptado pela Fila 0 populando. Enquanto isso, B "chega" no mesmo grupo de prioridade. A deve retomar do TOPO do grupo (antes de B), com quantumRestante e pc preservados, não reseta como no caso de estouro acima.
 void testarPreempcaoFila1()
 {
     Scheduler scheduler;
@@ -80,18 +75,9 @@ void testarPreempcaoFila1()
     cout << "testarPreempcaoFila1: ok\n";
 }
 
-// Integração: replica o cenário P1+P2 do enunciado (TP1_20262.pdf, seção 5),
-// arrival P1=0/prio3, P2=1/prio5.
+// Integração: replica o cenário P1+P2 do enunciado (TP1_20262.pdf, seção 5), arrival P1=0/prio3, P2=1/prio5.
 //
-// IMPORTANTE: o PDF afirma turnaround P2=17 (finaliza em t=18), mas isso só
-// bate se o salto BRPOS não consumir 1 UT -- contradiz a regra escrita do
-// próprio PDF ("cada instrução leva 1 UT"), que aplicamos aqui à risca
-// (igual ao step() da Fase 2). Com BRPOS custando 1 UT como qualquer
-// instrução, P2 termina em t=26 (turnaround 25), não t=18. P1 (sem saltos
-// no programa) bate exatamente com o PDF (turnaround 11) -- só P2 diverge,
-// e é o único dos dois com laço/BRPOS. Decisão registrada em
-// NOTES/perguntas.md (seção Scheduler): seguimos a regra escrita, não o
-// exemplo numérico do PDF, até confirmar com o professor.
+// IMPORTANTE: o PDF afirma turnaround P2=17 (finaliza em t=18), mas isso só bate se o salto BRPOS não consumir 1 UT, o que contradiz a regra escrita do próprio PDF ("cada instrução leva 1 UT"), que aplicamos aqui à risca (igual ao step() do process.cpp). Com BRPOS custando 1 UT como qualquer instrução, P2 termina em t=26 (turnaround 25), não t=18. P1 (sem saltos no programa) bate exatamente com o PDF (turnaround 11), só P2 diverge, e é o único dos dois com laço/BRPOS. Decisão registrada em NOTES/perguntas.md (seção Scheduler): seguimos a regra escrita, não o exemplo numérico do PDF, até confirmar com o professor.
 void testarCenarioP1P2DoEnunciado()
 {
     Programa p1prog = parse("tests/p1.asm");
@@ -107,8 +93,7 @@ void testarCenarioP1P2DoEnunciado()
 
         ResultadoTick r = tick(scheduler);
 
-        // Prints na ordem certa, com o valor certo (confirmado por
-        // execução real antes de escrever este teste, não calculado à mão)
+        // Prints na ordem certa, com o valor certo (confirmado por execução real antes de escrever este teste, não calculado à mão)
         if (ut == 5) { assert(r.quemRodou == "P2"); assert(r.imprimiu); assert(r.valorImpresso == 2); }
         if (ut == 7) { assert(r.quemRodou == "P1"); assert(r.imprimiu); assert(r.valorImpresso == 15); }
         if (ut == 13) { assert(r.quemRodou == "P2"); assert(r.imprimiu); assert(r.valorImpresso == 1); }

@@ -14,9 +14,7 @@ enum class Opcode
     SYSCALL
 };
 
-// Como o operando de uma instrução deve ser interpretado na execução:
-// número literal (#5) ou nome de variável a buscar na memória do processo.
-// Só um deve ser usado por vez
+// Como o operando de uma instrução deve ser interpretado na execução: número literal (#5) ou nome de variável a buscar na memória do processo. Só um deve ser usado por vez
 enum class TipoOperando
 {
     IMEDIATO, // #N
@@ -38,9 +36,8 @@ struct Instrucao
 
     // Campo especial para syscall, qual chamada de sistema fazer (0 = encerrar / 1 = imprimir / 2 = ler)
     int indiceSyscall;
-    
-    // Pra onde pular 
-    // Usado só por BRANY/BRPOS/BRZERO/BRNEG: índice, na lista de instruções,
+
+    // Pra onde pular. Usado só por BRANY/BRPOS/BRZERO/BRNEG: índice, na lista de instruções,
     int alvoSalto;
 
 };
@@ -52,18 +49,13 @@ struct Programa
     // Instruções do .code, na ordem de execução, com labels já resolvidos em índices
     std::vector<Instrucao> instrucoes;
 
-    // Valor inicial de cada variável do .data (nome -> valor), usado só pra montar a memória do processo no início
-    // Exemplo:
-    // .data 
-    //     valor 10
-    // Vira: variaveis["valor"] = 10
-    
+    // Valor inicial de cada variável do .data (nome -> valor), usado só pra montar a memória do processo no início. Exemplo: .data / valor 10 / Vira: variaveis["valor"] = 10
+
     std::map<std::string, int> variaveis;
 
 };
 
-// Por fim, a assinatura da função parse
-// Recebe o caminho onde está o arquivo e devolve um Programa pronto
+// Por fim, a assinatura da função parse. Recebe o caminho onde está o arquivo e devolve um Programa pronto
 Programa parse(std::string caminho);
 
 #endif
