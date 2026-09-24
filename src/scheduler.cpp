@@ -30,7 +30,7 @@ ResultadoTick avancarFila0(Scheduler &scheduler)
         scheduler.quantumUsadoFila0 = 0;
     }
 
-    // 2. Bloqueou (SYSCALL 1/2) -> vai pra lista de bloqueados esperar o I/O
+    // 2. Bloqueou (SYSCALL 1/2) -> vai pra lista de bloqueados esperar 3 UT completas de I/O
     else if (processo.estado == Estado::BLOQUEADO)
     {
         scheduler.bloqueados.push_back({processo, 4});

@@ -109,6 +109,20 @@ string descobrirEstado(const string &nome, const Scheduler &scheduler, const str
     return "Finalizado";
 }
 
+// Confere se um processo continua na lista de bloqueados após o avanço do tick.
+// Isso evita contar como bloqueio a UT em que o countdown zera e o processo retorna à Fila 0.
+bool estaBloqueado(const string &nome, const Scheduler &scheduler)
+{
+    for (const Bloqueado &b : scheduler.bloqueados)
+    {
+        if (b.processo.nome == nome)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 // Estatísticas que o Scheduler não guarda (ele esquece processos assim que eles saem do sistema): arrival de cada um, quando encerrou, e quanto tempo total ele passou rodando/bloqueado ao longo de TODA a simulação, acumulado UT a UT, porque tick() só sabe sobre 1 UT.
 struct RegistroProcesso
 {
@@ -183,8 +197,9 @@ int main(int argc, char *argv[])
 
         for (const string &nome : bloqueadosAntes)
         {
-            // Se esse processo é justamente quem rodou nesse UT, é porque o countdown zerou e ele foi direto pra fila0 e já despachado no mesmo tick(): esse UT conta como CPU, não bloqueio (senão seria contado 2x: turnaround = CPU+bloqueio+espera não bateria mais, espera podia até ficar negativa).
-            if (nome != r.quemRodou)
+            // Conta como bloqueio apenas se, depois de avancarBloqueados(), o processo ainda estiver bloqueado.
+            // Se o countdown zerou neste tick, ele já voltou à Fila 0 e esta UT não é mais de bloqueio.
+            if (nome != r.quemRodou && estaBloqueado(nome, scheduler))
             {
                 registros[nome].tempoBloqueio++;
             }

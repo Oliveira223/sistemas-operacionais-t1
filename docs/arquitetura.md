@@ -120,9 +120,9 @@ num processo nunca afeta outro que rode o mesmo `.asm`), `estado`
 `step(Process&)` executa a instrução em `instrucoes[pc]` e avança `pc`.
 Um `switch` no opcode despacha pra cada categoria; saltos tomados escrevem
 `pc` diretamente e retornam antes do `pc++` padrão do final da função.
-`SYSCALL 0` marca `FINALIZADO`; `SYSCALL 1`/`2` marcam `BLOQUEADO` (o
-countdown de 3 UT do bloqueio é responsabilidade do `scheduler`, não do
-`process`).
+`SYSCALL 0` marca `FINALIZADO`; `SYSCALL 1` marca `BLOQUEADO`; e
+`SYSCALL 2` lê um inteiro para `acc` e marca `BLOQUEADO`. O período de 3 UT
+completas de bloqueio é responsabilidade do `scheduler`, não do `process`.
 
 ## `scheduler` — detalhado (núcleo do trabalho)
 
@@ -143,7 +143,9 @@ registro de estatísticas, ver abaixo).
   satisfeita sem precisar de nenhuma função dedicada.
 - `avancarBloqueados()` decrementa o countdown de todo mundo bloqueado (I/O
   roda em paralelo à CPU, não 1 de cada vez) e devolve quem zerou pro fim
-  da Fila 0.
+  da Fila 0. Internamente o contador começa em 4 porque ele é decrementado no
+  início do `tick()`: uma SYSCALL executada em `t` deixa o processo bloqueado
+  em `t+1`, `t+2` e `t+3`, com retorno à Fila 0 em `t+4`.
 - `tick()` avança 1 UT inteira: bloqueados sempre andam; a CPU vai pra
   Fila 0 se ela tiver alguém, senão pra Fila 1. Devolve um `ResultadoTick`
   (quem rodou, se imprimiu e com que valor, se terminou).
@@ -187,11 +189,10 @@ três em sequência): `test_assembler.cpp` e `test_process.cpp` usam
 dois casos isolados mais fáceis de errar (estouro de quantum vs.
 preempção) e o cenário completo P1+P2 do enunciado.
 
-**Divergência conhecida com o PDF**: seguindo a regra escrita do
-enunciado ("cada instrução leva 1 UT") à risca, incluindo os saltos
-(`BRPOS`), o turnaround do P2 na nossa simulação dá 25 UT, não os 17 que o
-PDF afirma — o P1 (que não tem salto no programa) bate exatamente com o
-PDF (turnaround 11). O exemplo numérico do próprio PDF parece não contar
-o `BRPOS` como consumindo uma UT, o que contradiz a regra que ele mesmo
-escreve. Essa divergência está documentada e testada explicitamente em
-`test_scheduler.cpp`.
+**Observação sobre o exemplo numérico do PDF**: a implementação segue 1 UT
+por instrução (inclusive `BRPOS`) e, para `SYSCALL 1/2`, executa a chamada em
+`t`, mantém o processo bloqueado nas 3 UTs seguintes e o devolve à Fila 0 em
+`t+4`. Com essas regras, o cenário P1+P2 resulta em turnaround 12 para P1 e 28
+para P2. A linha do tempo numérica do PDF apresenta valores diferentes e não é
+compatível com essas regras em todos os pontos; por isso os testes usam a
+semântica formal adotada pela implementação.

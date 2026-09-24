@@ -1,4 +1,4 @@
 simulador
-tests/test_assembler
-tests/test_process
-tests/test_scheduler
+test_assembler
+test_process
+test_scheduler

@@ -77,7 +77,9 @@ void testarPreempcaoFila1()
 
 // Integração: replica o cenário P1+P2 do enunciado (TP1_20262.pdf, seção 5), arrival P1=0/prio3, P2=1/prio5.
 //
-// IMPORTANTE: o PDF afirma turnaround P2=17 (finaliza em t=18), mas isso só bate se o salto BRPOS não consumir 1 UT, o que contradiz a regra escrita do próprio PDF ("cada instrução leva 1 UT"), que aplicamos aqui à risca (igual ao step() do process.cpp). Com BRPOS custando 1 UT como qualquer instrução, P2 termina em t=26 (turnaround 25), não t=18. P1 (sem saltos no programa) bate exatamente com o PDF (turnaround 11), só P2 diverge, e é o único dos dois com laço/BRPOS. Decisão registrada em NOTES/perguntas.md (seção Scheduler): seguimos a regra escrita, não o exemplo numérico do PDF, até confirmar com o professor.
+// O teste segue a semântica adotada no projeto: toda instrução custa 1 UT, inclusive BRPOS;
+// SYSCALL 1/2 executa em t, bloqueia nas 3 UTs seguintes e retorna à Fila 0 em t+4.
+// Por isso os tempos diferem do exemplo numérico do PDF.
 void testarCenarioP1P2DoEnunciado()
 {
     Programa p1prog = parse("tests/p1.asm");
@@ -96,8 +98,8 @@ void testarCenarioP1P2DoEnunciado()
         // Prints na ordem certa, com o valor certo (confirmado por execução real antes de escrever este teste, não calculado à mão)
         if (ut == 5) { assert(r.quemRodou == "P2"); assert(r.imprimiu); assert(r.valorImpresso == 2); }
         if (ut == 7) { assert(r.quemRodou == "P1"); assert(r.imprimiu); assert(r.valorImpresso == 15); }
-        if (ut == 13) { assert(r.quemRodou == "P2"); assert(r.imprimiu); assert(r.valorImpresso == 1); }
-        if (ut == 20) { assert(r.quemRodou == "P2"); assert(r.imprimiu); assert(r.valorImpresso == 0); }
+        if (ut == 14) { assert(r.quemRodou == "P2"); assert(r.imprimiu); assert(r.valorImpresso == 1); }
+        if (ut == 22) { assert(r.quemRodou == "P2"); assert(r.imprimiu); assert(r.valorImpresso == 0); }
 
         if (r.terminou && r.quemRodou == "P1") finalizacaoP1 = ut;
         if (r.terminou && r.quemRodou == "P2") finalizacaoP2 = ut;
@@ -106,14 +108,13 @@ void testarCenarioP1P2DoEnunciado()
     int turnaroundP1 = finalizacaoP1 + 1 - 0; // +1: UT é 0-indexado, "t" do PDF é o fim da UT
     int turnaroundP2 = finalizacaoP2 + 1 - 1;
 
-    assert(finalizacaoP1 == 10); // t=11, bate com o PDF
-    assert(turnaroundP1 == 11);
+    assert(finalizacaoP1 == 11); // executa SYSCALL 0 na UT 11, encerra em t=12
+    assert(turnaroundP1 == 12);
 
-    assert(finalizacaoP2 == 25); // t=26 -- diverge do t=18 do PDF (ver comentário acima)
-    assert(turnaroundP2 == 25);
+    assert(finalizacaoP2 == 28); // executa SYSCALL 0 na UT 28, encerra em t=29
+    assert(turnaroundP2 == 28);
 
-    cout << "testarCenarioP1P2DoEnunciado: ok (turnaround P1=11 bate com o PDF; "
-         << "P2=25 diverge do 17 do PDF por causa do BRPOS -- ver NOTES/perguntas.md)\n";
+    cout << "testarCenarioP1P2DoEnunciado: ok (turnaround P1=12, P2=28; regras formais do projeto)\n";
 }
 
 int main()

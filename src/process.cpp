@@ -1,4 +1,5 @@
 #include "process.h"
+#include <iostream>
 
 // Função auxiliar, static para existir apenas dentro desse codigo. Devolve o valor que a instrução referencia: valorImediato (#N) ou o que está guardado em memoria[nomeVariavel] (endereço direto). Usado por aritmética, LOAD e (depois) pelos saltos - todos leem um valor desse jeito.
 static int obterValor(const Instrucao &instrucao, const Process &processo)
@@ -72,7 +73,9 @@ void step(Process &processo)
             }
             break;
 
-        // indiceSyscall: 0=halt, 1=print, 2=read. O countdown de 3 UT do bloqueio é responsabilidade do scheduler
+        // indiceSyscall: 0=halt, 1=print, 2=read. O bloqueio de 3 UT é responsabilidade do scheduler.
+        // Na SYSCALL 2, como a máquina é baseada em acumulador e o enunciado não define outro destino,
+        // o inteiro lido do teclado é armazenado em acc.
         case Opcode::SYSCALL:
             if (instrucao.indiceSyscall == 0)
             {
@@ -80,6 +83,10 @@ void step(Process &processo)
             }
             else
             {
+                if (instrucao.indiceSyscall == 2)
+                {
+                    std::cin >> processo.acc;
+                }
                 processo.estado = Estado::BLOQUEADO;
             }
             break;
