@@ -186,7 +186,7 @@ int main(int argc, char *argv[])
             }
         }
 
-        // Foto de quem está bloqueado ANTES do tick(): depois da chamada alguém pode já ter saído dali (countdown chegou a 0), e nesse caso ele ainda gastou 1 UT de bloqueio nesse UT que passou.
+        // Foto de quem está bloqueado ANTES do tick(): só quem já estava bloqueado entrando nesse UT pode ter essa UT contada como bloqueio. Depois do tick(), estaBloqueado() confere se cada um continua na lista: se o countdown zerou nesse UT (voltou pra Fila 0), essa UT não conta mais como bloqueio, mesmo que o processo ainda não tenha rodado (nesse caso ela vira espera, via a subtração no cálculo final).
         vector<string> bloqueadosAntes;
         for (const Bloqueado &b : scheduler.bloqueados)
         {
