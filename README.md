@@ -67,11 +67,19 @@ docs/   documentação da arquitetura e o enunciado original (TP1_20262.pdf)
 ## Testando com os casos do enunciado
 
 `tests/p1.asm` e `tests/p2.asm` são os dois programas de exemplo do
-enunciado (`tests/processos.txt` já carrega os dois juntos, arrival 0 e 1
-como o PDF pede). O turnaround do P1 bate exatamente com o que o PDF
-calcula (11 UT). O do P2 diverge (25 UT na nossa simulação, contra 17 no
-PDF) — seguimos à risca a regra escrita do enunciado de que toda
-instrução, incluindo os saltos (`BRPOS`), consome 1 UT; o exemplo
-numérico do próprio PDF parece não contar o salto do laço do P2 dessa
-forma. Essa divergência está documentada e testada em
-`tests/test_scheduler.cpp` e detalhada em `docs/arquitetura.md`.
+enunciado (`tests/processos.txt` carrega os dois juntos, com arrivals 0 e 1).
+A implementação segue a regra de 1 UT por instrução, inclusive saltos, e a
+convenção temporal confirmada para `SYSCALL 1/2`: a chamada executa em `t`, o
+processo fica bloqueado nas 3 UTs seguintes e retorna à Fila 0 em `t+4`.
+
+Com os dois processos juntos, a execução atual produz:
+
+```text
+P1: turnaround=12 (CPU=5, bloqueio=3, espera=4)
+P2: turnaround=28 (CPU=17, bloqueio=9, espera=2)
+Espera media na fila de prontos: 3 UT
+```
+
+Os valores diferem do exemplo numérico do PDF, cuja linha do tempo não é
+compatível com essas duas regras em todos os pontos. Os testes automatizados
+seguem as regras formais adotadas pela implementação.

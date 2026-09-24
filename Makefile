@@ -1,36 +1,29 @@
-# Compilador usado e Flags de compilação
-CXX = g++
-CXXFLAGS = -std=c++11 -Wall -Wextra
+CXX := g++
+CXXFLAGS := -std=c++11 -Wall -Wextra -pedantic
 
-# Arquivos .cpp que entram na compilação
-SRC = src/main.cpp src/assembler.cpp src/process.cpp src/scheduler.cpp
+SRC := src/assembler.cpp src/process.cpp src/scheduler.cpp
+TARGET := simulador
 
-# Headers dos quais o binário depende (se um mudar precisamos recompila tudo)
-HEADERS = src/assembler.h src/process.h src/scheduler.h
+.PHONY: all clean test
 
-# Nome do executável gerado
-BIN = simulador
+all: $(TARGET)
 
-.PHONY: all test clean
+$(TARGET): $(SRC) src/main.cpp
+	$(CXX) $(CXXFLAGS) -Isrc $^ -o $@
 
-# Alvo padrão ao rodar "make" sem argumento
-all: $(BIN)
+test: test_assembler test_process test_scheduler
+	./test_assembler
+	./test_process
+	./test_scheduler
 
-# Gera o executável a partir dos fontes; refaz se algum header mudar
-$(BIN): $(SRC) $(HEADERS)
-	$(CXX) $(CXXFLAGS) $(SRC) -o $(BIN)
+test_assembler: $(SRC) tests/test_assembler.cpp
+	$(CXX) $(CXXFLAGS) -Isrc $^ -o $@
 
-# Compila e roda os testes do assembler, do process e do scheduler (cada
-# test_*.cpp já tem seu próprio main, por isso não entram no $(SRC) do
-# binário principal)
-test: tests/test_assembler.cpp tests/test_process.cpp tests/test_scheduler.cpp src/assembler.cpp src/process.cpp src/scheduler.cpp $(HEADERS)
-	$(CXX) $(CXXFLAGS) -Isrc tests/test_assembler.cpp src/assembler.cpp -o tests/test_assembler
-	./tests/test_assembler
-	$(CXX) $(CXXFLAGS) -Isrc tests/test_process.cpp src/assembler.cpp src/process.cpp -o tests/test_process
-	./tests/test_process
-	$(CXX) $(CXXFLAGS) -Isrc tests/test_scheduler.cpp src/assembler.cpp src/process.cpp src/scheduler.cpp -o tests/test_scheduler
-	./tests/test_scheduler
+test_process: $(SRC) tests/test_process.cpp
+	$(CXX) $(CXXFLAGS) -Isrc $^ -o $@
 
-# Remove os executáveis gerados
+test_scheduler: $(SRC) tests/test_scheduler.cpp
+	$(CXX) $(CXXFLAGS) -Isrc $^ -o $@
+
 clean:
-	rm -f $(BIN) tests/test_assembler tests/test_process tests/test_scheduler
+	rm -f $(TARGET) test_assembler test_process test_scheduler

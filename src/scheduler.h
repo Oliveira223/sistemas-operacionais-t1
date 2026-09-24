@@ -14,7 +14,9 @@ struct EntradaFila1
     int quantumRestante;
 };
 
-// Processo esperando i/o (SYSCALL 1 ou 2): countdown regressivo de 3 UT, decrementado a cada tick(). Ao chegar em 0, volta pro fim da Fila 0.
+// Processo esperando I/O (SYSCALL 1 ou 2). O campo restante começa em 4 porque
+// avancarBloqueados() roda no início de cada tick: assim, depois da SYSCALL em t,
+// o processo fica bloqueado em t+1, t+2 e t+3 e retorna à Fila 0 em t+4.
 struct Bloqueado
 {
     Process processo;
