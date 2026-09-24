@@ -15,7 +15,8 @@ struct Pendente
     int arrival;
 };
 
-// Lê o arquivo de config, formato "nome arrival prioridade caminho.asm". Linhas em branco ou começando com # são ignoradas (comentário) - lê linha por linha (em vez de >> direto do arquivo) exatamente por causa disso: precisa decidir "pular ou processar" antes de tentar extrair os 4 campos, senão uma linha de comentário quebraria a extração e pararia a leitura do arquivo inteiro ali (igual ao que já fazemos no assembler.cpp pra pular linha de label).
+// Lê o arquivo de config, formato "nome arrival prioridade caminho.asm".
+// Linhas em branco ou começando com # são ignoradas.
 vector<Pendente> lerConfig(string caminho)
 {
     vector<Pendente> pendentes;
@@ -43,7 +44,7 @@ vector<Pendente> lerConfig(string caminho)
     return pendentes;
 }
 
-// Imprime o conteúdo das 3 estruturas do scheduler nesse instante. fila1 é varrida com rbegin()/rend() (maior prioridade primeiro), igual ao avancarFila1, assim a ordem impressa já reflete a ordem de despacho.
+// Imprime o conteúdo das estruturas do scheduler após a execução da UT.
 void imprimirFilas(const Scheduler &scheduler)
 {
     cout << "  Fila0: ";
@@ -66,19 +67,16 @@ void imprimirFilas(const Scheduler &scheduler)
     cout << "  Bloqueados: ";
     for (const Bloqueado &b : scheduler.bloqueados)
     {
-        cout << b.processo.nome << "(" << b.restante << "UT) ";
+        // Mostra só quem está bloqueado. O contador é detalhe interno do scheduler.
+        cout << b.processo.nome << " ";
     }
     cout << "\n";
 }
 
-// Descobre o estado atual de um processo, dado seu nome. Se ele não está rodando agora nem em nenhuma das 3 listas do scheduler, só sobra uma possibilidade: já terminou (processos finalizados somem do Scheduler, não tem outro lugar onde poderiam estar). Por isso não precisa de nenhum registro extra só pra saber quem já terminou.
-string descobrirEstado(const string &nome, const Scheduler &scheduler, const string &quemRodou)
+// Estado do processo APÓS a execução da UT.
+// Quem executou DURANTE a UT aparece separadamente na linha "CPU=...".
+string descobrirEstado(const string &nome, const Scheduler &scheduler)
 {
-    if (nome == quemRodou)
-    {
-        return "Executando";
-    }
-
     for (const Process &p : scheduler.fila0)
     {
         if (p.nome == nome)
@@ -110,7 +108,6 @@ string descobrirEstado(const string &nome, const Scheduler &scheduler, const str
 }
 
 // Confere se um processo continua na lista de bloqueados após o avanço do tick.
-// Isso evita contar como bloqueio a UT em que o countdown zera e o processo retorna à Fila 0.
 bool estaBloqueado(const string &nome, const Scheduler &scheduler)
 {
     for (const Bloqueado &b : scheduler.bloqueados)
@@ -123,17 +120,16 @@ bool estaBloqueado(const string &nome, const Scheduler &scheduler)
     return false;
 }
 
-// Estatísticas que o Scheduler não guarda (ele esquece processos assim que eles saem do sistema): arrival de cada um, quando encerrou, e quanto tempo total ele passou rodando/bloqueado ao longo de TODA a simulação, acumulado UT a UT, porque tick() só sabe sobre 1 UT.
+// Estatísticas mantidas fora do Scheduler, pois processos finalizados saem das filas.
 struct RegistroProcesso
 {
     string nome;
     int arrival;
-    int encerramento = -1; // -1 = ainda não terminou
+    int encerramento = -1;
     int tempoCpu = 0;
     int tempoBloqueio = 0;
 };
 
-// Confere se um nome ainda está entre os pendentes (ainda não chegou).
 bool aindaNaoChegou(const string &nome, const vector<Pendente> &pendentes)
 {
     for (const Pendente &p : pendentes)
@@ -146,13 +142,11 @@ bool aindaNaoChegou(const string &nome, const vector<Pendente> &pendentes)
     return false;
 }
 
-// Uso: ./simulador [caminho/do/config.txt]. Sem argumento, usa tests/processos.txt (cenário P1+P2 do enunciado), mas qualquer arquivo no mesmo formato pode ser passado na hora, sem precisar recompilar (importante pra rodar outros casos na apresentação).
 int main(int argc, char *argv[])
 {
     string caminhoConfig = (argc > 1) ? argv[1] : "tests/processos.txt";
     vector<Pendente> pendentes = lerConfig(caminhoConfig);
 
-    // Guardado ANTES do loop, com os nomes de TODOS os processos: pendentes vai encolhendo conforme são admitidos, então não dá mais pra usar pendentes.size() (nem pendentes.at(i).processo.nome) depois de um tempo pra saber quem existe no total.
     vector<string> todosNomes;
     map<string, RegistroProcesso> registros;
     for (const Pendente &p : pendentes)
@@ -164,15 +158,16 @@ int main(int argc, char *argv[])
         registro.arrival = p.arrival;
         registros[p.processo.nome] = registro;
     }
+
     int totalProcessos = pendentes.size();
 
     Scheduler scheduler;
     int finalizados = 0;
 
-    // Roda até todo mundo terminar, nem um UT a mais nem a menos.
+    // Cada repetição representa uma UT completa do sistema.
     for (int ut = 0; finalizados < totalProcessos; ut++)
     {
-        // Admite quem chega nesse UT ANTES de chamar tick(): assim, quem acabou de chegar já disputa a CPU nesse mesmo UT (mesma lógica da preempção imediata, tick() sempre reavalia a Fila 0 do zero). Índice+erase é o mesmo padrão do avancarBloqueados: precisa reprocessar o índice que "tomou o lugar" de quem foi removido, por isso só incrementa i no else.
+        // Admite antes do tick para quem chega em t já disputar a CPU em t.
         for (size_t i = 0; i < pendentes.size();)
         {
             if (pendentes[i].arrival == ut)
@@ -186,7 +181,6 @@ int main(int argc, char *argv[])
             }
         }
 
-        // Foto de quem está bloqueado ANTES do tick(): depois da chamada alguém pode já ter saído dali (countdown chegou a 0), e nesse caso ele ainda gastou 1 UT de bloqueio nesse UT que passou.
         vector<string> bloqueadosAntes;
         for (const Bloqueado &b : scheduler.bloqueados)
         {
@@ -197,8 +191,6 @@ int main(int argc, char *argv[])
 
         for (const string &nome : bloqueadosAntes)
         {
-            // Conta como bloqueio apenas se, depois de avancarBloqueados(), o processo ainda estiver bloqueado.
-            // Se o countdown zerou neste tick, ele já voltou à Fila 0 e esta UT não é mais de bloqueio.
             if (nome != r.quemRodou && estaBloqueado(nome, scheduler))
             {
                 registros[nome].tempoBloqueio++;
@@ -212,23 +204,31 @@ int main(int argc, char *argv[])
 
         if (r.terminou)
         {
-            registros[r.quemRodou].encerramento = ut + 1; // "t" = fim do UT
+            registros[r.quemRodou].encerramento = ut + 1;
         }
 
+        // Quem ocupou a CPU DURANTE a UT.
         cout << "UT" << ut << ": ";
         if (!r.quemRodou.empty())
         {
-            cout << r.quemRodou;
-            if (r.imprimiu) cout << " imprime " << r.valorImpresso;
-            if (r.terminou) cout << " [FINALIZADO]";
+            cout << "CPU=" << r.quemRodou << " (Executando)";
+            if (r.imprimiu)
+            {
+                cout << " | imprime " << r.valorImpresso;
+            }
+            if (r.terminou)
+            {
+                cout << " | finaliza ao fim da UT";
+            }
         }
         else
         {
-            cout << "(ocioso)";
+            cout << "CPU ociosa";
         }
         cout << "\n";
 
-        cout << "  Estados: ";
+        // Situação resultante APÓS a execução da UT.
+        cout << "  Estados ao final da UT: ";
         for (const string &nome : todosNomes)
         {
             if (aindaNaoChegou(nome, pendentes))
@@ -237,18 +237,22 @@ int main(int argc, char *argv[])
             }
             else
             {
-                cout << nome << "=" << descobrirEstado(nome, scheduler, r.quemRodou) << " ";
+                cout << nome << "=" << descobrirEstado(nome, scheduler) << " ";
             }
         }
         cout << "\n";
 
         imprimirFilas(scheduler);
 
-        if (r.terminou) finalizados++;
+        if (r.terminou)
+        {
+            finalizados++;
+        }
     }
 
     cout << "\n=== Estatisticas finais ===\n";
     int somaEspera = 0;
+
     for (const string &nome : todosNomes)
     {
         RegistroProcesso &registro = registros[nome];
