@@ -33,7 +33,7 @@ ResultadoTick avancarFila0(Scheduler &scheduler)
     // 2. Bloqueou (SYSCALL 1/2) -> vai pra lista de bloqueados esperar o I/O
     else if (processo.estado == Estado::BLOQUEADO)
     {
-        scheduler.bloqueados.push_back({processo, 4});
+        scheduler.bloqueados.push_back({processo, 3});
         scheduler.fila0.pop_front();
         scheduler.quantumUsadoFila0 = 0;
     }
@@ -83,7 +83,7 @@ ResultadoTick avancarFila1(Scheduler &scheduler)
         }
         else if (entrada.processo.estado == Estado::BLOQUEADO)
         {
-            scheduler.bloqueados.push_back({entrada.processo, 4});
+            scheduler.bloqueados.push_back({entrada.processo, 3});
             fila.pop_front();
         }
         else if (entrada.quantumRestante == 0)
